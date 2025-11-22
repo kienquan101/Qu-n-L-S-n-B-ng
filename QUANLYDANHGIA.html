@@ -1,0 +1,267 @@
+x   <!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản Lý Đánh Giá</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f0f2f5;
+  }
+
+  .header {
+    background: #5a2ec7;
+    color: white;
+    padding: 28px 40px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 26px;
+  }
+
+  .container {
+    max-width: 1250px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  .card {
+    background: white;
+    padding: 22px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+  }
+
+  .card h3 {
+    margin-top: 0;
+    color: #444;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 40% 58%;
+    gap: 2%;
+  }
+
+  .review-item {
+    background: #fafafa;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+  .review-item:hover {
+    background: #f0eaff;
+    border-color: #5a2ec7;
+  }
+  .review-item.active {
+    background: #e9ddff;
+    border-color: #5a2ec7;
+  }
+
+  .rating {
+    color: #f7b500;
+    font-size: 14px;
+  }
+
+  .status {
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+  .status.visible {
+    background: #d8f8d8;
+    color: #067a14;
+  }
+  .status.hidden {
+    background: #ffe2e2;
+    color: #b30000;
+  }
+
+  #detail p {
+    margin: 8px 0;
+  }
+
+  textarea {
+    width: 100%;
+    padding: 8px;
+    height: 80px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: none;
+  }
+
+  .btn-action {
+    padding: 10px 18px;
+    background: #5a2ec7;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .buttons button {
+    padding: 10px 20px;
+    margin-right: 8px;
+    background: #eadbff;
+    border: none;
+    color: #5a2ec7;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .buttons button:hover {
+    background: #dcc9ff;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Quản Lý Đánh Giá</h1>
+  <p>Xem, trả lời, ẩn và xóa đánh giá</p>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Bộ Lọc</h3>
+    <div class="buttons">
+      <button onclick="setFilter('all')">Tất cả</button>
+      <button onclick="setFilter('visible')">Hiển thị</button>
+      <button onclick="setFilter('hidden')">Đã ẩn</button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- LIST -->
+    <div class="card">
+      <h3>Danh Sách Đánh Giá</h3>
+      <div id="review-list"></div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="card">
+      <h3>Chi Tiết Đánh Giá</h3>
+      <div id="detail">Chọn 1 đánh giá để xem chi tiết</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const reviews = [
+    { id: '1', user: 'Minh', rating: 5, content: 'Sân đẹp, sạch sẽ!', reply: '', status: 'visible' },
+    { id: '2', user: 'Long', rating: 3, content: 'Ổn nhưng hơi đông.', reply: '', status: 'visible' },
+    { id: '3', user: 'Hà', rating: 1, content: 'Nhân viên phục vụ kém.', reply: '', status: 'hidden' }
+  ];
+
+  let selectedId = null;
+  let filter = "all";
+
+  function renderReviews() {
+    const list = document.getElementById("review-list");
+    list.innerHTML = "";
+
+    const filtered = reviews.filter(r =>
+      filter === "all" ? true : r.status === filter
+    );
+
+    filtered.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "review-item" + (selectedId === r.id ? " active" : "");
+      div.innerHTML = `
+        <b>${r.user}</b> • 
+        <span class="rating">★ ${r.rating}</span>
+        <span class="status ${r.status}">
+          ${r.status === "visible" ? "Hiển thị" : "Đã ẩn"}
+        </span>
+        <br>
+        <small>${r.content.substring(0, 40)}...</small>
+      `;
+      div.onclick = () => selectReview(r.id);
+      list.appendChild(div);
+    });
+  }
+
+  function selectReview(id) {
+    selectedId = id;
+    const r = reviews.find(x => x.id === id);
+
+    document.getElementById("detail").innerHTML = `
+      <p><b>Người đánh giá:</b> ${r.user}</p>
+      <p><b>Số sao:</b> ★ ${r.rating}</p>
+      <p><b>Nội dung:</b><br> ${r.content}</p>
+
+      <p><b>Trạng thái:</b> 
+        <span class="status ${r.status}">
+          ${r.status === "visible" ? "Hiển thị" : "Đã ẩn"}
+        </span>
+      </p>
+
+      <hr>
+
+      <h4>Trả lời đánh giá</h4>
+      <textarea id="reply-box">${r.reply || ""}</textarea>
+      <button class="btn-action" onclick="replyReview('${r.id}')">Gửi trả lời</button>
+
+      <hr>
+
+      <h4>Ẩn hoặc xóa đánh giá</h4>
+      <button class="btn-action" onclick="toggleHidden('${r.id}')">
+        ${r.status === "visible" ? "Ẩn đánh giá" : "Hiện đánh giá"}
+      </button>
+      <br><br>
+      <button class="btn-action" style="background:#c70000;" onclick="deleteReview('${r.id}')">
+        Xóa đánh giá
+      </button>
+    `;
+
+    renderReviews();
+  }
+
+  function replyReview(id) {
+    const r = reviews.find(x => x.id === id);
+    r.reply = document.getElementById("reply-box").value;
+
+    alert("Đã gửi trả lời!");
+  }
+
+  function toggleHidden(id) {
+    const r = reviews.find(x => x.id === id);
+    r.status = (r.status === "visible") ? "hidden" : "visible";
+
+    alert("Đã cập nhật trạng thái!");
+    renderReviews();
+    selectReview(id);
+  }
+
+  function deleteReview(id) {
+    const index = reviews.findIndex(r => r.id === id);
+    reviews.splice(index, 1);
+
+    selectedId = null;
+    document.getElementById("detail").innerHTML = "Chọn 1 đánh giá để xem chi tiết";
+
+    alert("Đã xóa đánh giá!");
+    renderReviews();
+  }
+
+  function setFilter(f) {
+    filter = f;
+    renderReviews();
+  }
+
+  renderReviews();
+</script>
+
+</body>
+</html>
